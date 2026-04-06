@@ -1,0 +1,205 @@
+/* static/css/custom.css */
+
+/* Global Table Styles - Reduced Font Sizes */
+.table {
+    font-size: 0.75rem !important;
+}
+
+.table td,
+.table th {
+    padding: 0.4rem 0.5rem !important;
+    vertical-align: middle !important;
+}
+
+.table thead th {
+    font-weight: 600;
+    background-color: #f8fafc;
+    font-size: 0.75rem !important;
+}
+
+.table tbody td {
+    font-size: 0.75rem !important;
+}
+
+/* Small text inside tables */
+.table small,
+.table .small {
+    font-size: 0.7rem !important;
+}
+
+/* Badge styles for tables */
+.table .badge {
+    font-size: 0.65rem !important;
+    padding: 0.25rem 0.5rem !important;
+    font-weight: 500;
+}
+
+/* Button styles in tables */
+.table .btn-sm {
+    padding: 0.2rem 0.4rem !important;
+    font-size: 0.65rem !important;
+}
+
+/* Responsive table container */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Card header styles */
+.card-header {
+    padding: 0.6rem 1rem !important;
+}
+
+.card-header h5,
+.card-header h6 {
+    font-size: 0.85rem !important;
+    margin-bottom: 0;
+}
+
+/* Stat card styles */
+.stat-card h3 {
+    font-size: 1.2rem !important;
+}
+
+.stat-card h6 {
+    font-size: 0.7rem !important;
+}
+
+.stat-card .fa-2x {
+    font-size: 1.5rem !important;
+}
+
+/* Quick action card styles */
+.quick-action-card h6 {
+    font-size: 0.8rem !important;
+}
+
+.quick-action-card p {
+    font-size: 0.7rem !important;
+}
+
+.quick-action-card i {
+    font-size: 1.5rem !important;
+}
+
+/* Pagination styles */
+.pagination .page-link {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.7rem !important;
+}
+
+/* Form controls */
+.form-control,
+.form-select {
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.5rem !important;
+}
+
+.form-label {
+    font-size: 0.75rem !important;
+    margin-bottom: 0.2rem !important;
+}
+
+/* Alert messages */
+.alert {
+    font-size: 0.75rem !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Modal styles */
+.modal-body {
+    font-size: 0.75rem !important;
+}
+
+.modal-header h4,
+.modal-header h5 {
+    font-size: 1rem !important;
+}
+
+/* Dropdown items */
+.dropdown-item-custom {
+    font-size: 0.75rem !important;
+    padding: 0.4rem 1rem !important;
+}
+
+/* Sidebar link styles */
+.sidebar-link {
+    font-size: 0.8rem !important;
+    padding: 0.6rem 1rem !important;
+}
+
+.sidebar-header h3 {
+    font-size: 1rem !important;
+}
+
+/* Top navbar */
+.top-navbar {
+    padding: 0.5rem 1rem !important;
+}
+
+.user-name {
+    font-size: 0.8rem !important;
+}
+
+.user-email {
+    font-size: 0.7rem !important;
+}
+
+/* Dashboard welcome text */
+h2.fw-bold {
+    font-size: 1.3rem !important;
+}
+
+h4.fw-bold {
+    font-size: 1.1rem !important;
+}
+
+.text-muted {
+    font-size: 0.75rem !important;
+}
+
+/* Make tables more compact */
+.table-hover tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Status badge colors */
+.badge.bg-warning {
+    background-color: #f59e0b !important;
+}
+
+.badge.bg-success {
+    background-color: #10b981 !important;
+}
+
+.badge.bg-danger {
+    background-color: #ef4444 !important;
+}
+
+.badge.bg-info {
+    background-color: #3b82f6 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #64748b !important;
+}
+
+/* Print styles */
+@media print {
+    .sidebar,
+    .top-navbar,
+    .btn,
+    .btn-group,
+    .pagination {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+
+    .table {
+        font-size: 0.7rem !important;
+    }
+}

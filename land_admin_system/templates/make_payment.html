@@ -1,0 +1,526 @@
+<!-- templates/make_payment.html -->
+{% extends "base_private.html" %}
+
+{% block title %}Make Payment{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-method {
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        background: white;
+    }
+
+    .payment-method:hover {
+        border-color: #3b82f6;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    }
+
+    .payment-method.selected {
+        border-color: #3b82f6;
+        background: #eff6ff;
+        box-shadow: 0 5px 15px rgba(59,130,246,0.2);
+    }
+
+    .payment-logo {
+        height: 60px;
+        object-fit: contain;
+        margin-bottom: 12px;
+    }
+
+    .payment-name {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-top: 8px;
+        color: #1e293b;
+    }
+
+    .payment-details {
+        display: none;
+        margin-top: 20px;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .payment-details.active {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Payment Summary Table Styles */
+    .summary-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 0;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .summary-header {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .summary-header h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .summary-header i {
+        margin-right: 8px;
+    }
+
+    .summary-table {
+        width: 100%;
+        padding: 20px 25px;
+    }
+
+    .summary-table table {
+        width: 100%;
+        color: white;
+    }
+
+    .summary-table td {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .summary-table td:last-child {
+        text-align: right;
+        font-weight: 600;
+    }
+
+    .summary-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .summary-total {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .summary-total span:first-child {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .amount-display {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .card-input {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 12px 15px;
+        transition: all 0.2s;
+        width: 100%;
+    }
+
+    .card-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        outline: none;
+    }
+
+    .btn-pay {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+    .btn-pay:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(16,185,129,0.3);
+    }
+
+    .secure-badge {
+        background: #fef3c7;
+        color: #d97706;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+    }
+
+    .card-icons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+
+    .mobile-money-input {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">Make Payment</h2>
+            <p class="text-muted">Application: <strong>{{ application.application_number }}</strong></p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5">
+            <!-- Payment Summary in Tabular Form -->
+            <div class="summary-card">
+                <div class="summary-header">
+                    <h5><i class="fas fa-receipt"></i> Payment Summary</h5>
+                </div>
+                <div class="summary-table">
+                    <table>
+                        <tr>
+                            <td>Service Type</td>
+                            <td><strong>{{ application.service_type|replace('_', ' ')|title }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Application Number</td>
+                            <td><strong>{{ application.application_number }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Property Location</td>
+                            <td><strong>{{ application.property_location }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Service Fee</td>
+                            <td><strong>GHC {{ "{:,.2f}".format(amount) }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Processing Fee</td>
+                            <td><strong>GHC 0.00</strong></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="summary-total">
+                    <span>Total Amount</span>
+                    <span class="amount-display">GHC {{ "{:,.2f}".format(amount) }}</span>
+                </div>
+            </div>
+
+            <!-- Secure Payment Notice -->
+            <div class="alert alert-info">
+                <i class="fas fa-shield-alt me-2"></i>
+                <strong>Secure Payment</strong><br>
+                <small>Your payment information is encrypted and secure. All amounts are in Ghana Cedis (GHC).</small>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="fw-bold mb-0">Select Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="paymentForm">
+                        <div class="row g-3 mb-4">
+                            <!-- MTN Mobile Money -->
+                            <div class="col-md-4">
+                                <div class="payment-method" data-method="mtn">
+                                    <img src="{{ url_for('static', filename='img/mtn_logo.png') }}"
+                                         alt="MTN" class="payment-logo">
+                                    <div class="payment-name">MTN Mobile Money</div>
+                                    <small class="text-muted">Pay with MTN MoMo</small>
+                                </div>
+                            </div>
+
+                            <!-- Telecel (formerly Vodafone) -->
+                            <div class="col-md-4">
+                                <div class="payment-method" data-method="telecel">
+                                    <img src="{{ url_for('static', filename='img/telecel_logo.png') }}"
+                                         alt="Telecel" class="payment-logo">
+                                    <div class="payment-name">Telecel Cash</div>
+                                    <small class="text-muted">Pay with Telecel</small>
+                                </div>
+                            </div>
+
+                            <!-- AirtelTigo -->
+                            <div class="col-md-4">
+                                <div class="payment-method" data-method="airteltigo">
+                                    <img src="{{ url_for('static', filename='img/airteltigo_logo.png') }}"
+                                         alt="AirtelTigo" class="payment-logo">
+                                    <div class="payment-name">AirtelTigo Money</div>
+                                    <small class="text-muted">Pay with AirtelTigo</small>
+                                </div>
+                            </div>
+
+                            <!-- Mastercard -->
+                            <div class="col-md-4">
+                                <div class="payment-method" data-method="mastercard">
+                                    <i class="fab fa-cc-mastercard fa-3x text-primary mb-2"></i>
+                                    <div class="payment-name">Mastercard</div>
+                                    <small class="text-muted">Credit/Debit Card</small>
+                                </div>
+                            </div>
+
+                            <!-- Visa Card -->
+                            <div class="col-md-4">
+                                <div class="payment-method" data-method="visa">
+                                    <i class="fab fa-cc-visa fa-3x text-primary mb-2"></i>
+                                    <div class="payment-name">Visa Card</div>
+                                    <small class="text-muted">Credit/Debit Card</small>
+                                </div>
+                            </div>
+
+                            <!-- Bank Transfer -->
+                            <div class="col-md-4">
+                                <div class="payment-method" data-method="bank">
+                                    <i class="fas fa-university fa-3x text-primary mb-2"></i>
+                                    <div class="payment-name">Bank Transfer</div>
+                                    <small class="text-muted">Direct bank deposit</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="payment_method" id="payment_method" required>
+
+                        <!-- MTN Payment Details -->
+                        <div id="mtn_details" class="payment-details">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-mobile-alt me-2"></i>MTN Mobile Money Payment</h6>
+                            <div class="mobile-money-input">
+                                <label class="form-label fw-bold">MTN Mobile Number</label>
+                                <input type="tel" class="form-control" id="mtn_number" placeholder="05XXXXXXXX">
+                                <small class="text-muted">You will receive a prompt on your phone to complete payment of GHC {{ "{:,.2f}".format(amount) }}</small>
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Make sure your MTN MoMo account is active and has sufficient funds (GHC {{ "{:,.2f}".format(amount) }}).
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Telecel Payment Details -->
+                        <div id="telecel_details" class="payment-details">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-mobile-alt me-2"></i>Telecel Cash Payment</h6>
+                            <div class="mobile-money-input">
+                                <label class="form-label fw-bold">Telecel Phone Number</label>
+                                <input type="tel" class="form-control" id="telecel_number" placeholder="02XXXXXXXX">
+                                <small class="text-muted">Enter your Telecel number to receive payment prompt for GHC {{ "{:,.2f}".format(amount) }}</small>
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Ensure your Telecel Cash account is registered and active.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AirtelTigo Payment Details -->
+                        <div id="airteltigo_details" class="payment-details">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-mobile-alt me-2"></i>AirtelTigo Money Payment</h6>
+                            <div class="mobile-money-input">
+                                <label class="form-label fw-bold">AirtelTigo Number</label>
+                                <input type="tel" class="form-control" id="airteltigo_number" placeholder="03XXXXXXXX">
+                                <small class="text-muted">Enter your AirtelTigo number to complete payment of GHC {{ "{:,.2f}".format(amount) }}</small>
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Your AirtelTigo Money account must be active.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mastercard/Visa Card Details -->
+                        <div id="card_details" class="payment-details">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-credit-card me-2"></i>Card Payment</h6>
+                            <div class="card-icons mb-3">
+                                <i class="fab fa-cc-mastercard fa-2x"></i>
+                                <i class="fab fa-cc-visa fa-2x"></i>
+                                <i class="fab fa-cc-amex fa-2x"></i>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Card Number</label>
+                                <input type="text" class="form-control card-input" id="card_number" placeholder="1234 5678 9012 3456" maxlength="19">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Expiry Date</label>
+                                    <input type="text" class="form-control card-input" id="expiry_date" placeholder="MM/YY">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">CVV</label>
+                                    <input type="password" class="form-control card-input" id="cvv" placeholder="123" maxlength="4">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Cardholder Name</label>
+                                <input type="text" class="form-control card-input" id="cardholder_name" placeholder="John Doe">
+                            </div>
+                            <div class="secure-badge">
+                                <i class="fas fa-lock me-2"></i>Your card information is encrypted and secure
+                            </div>
+                        </div>
+
+                        <!-- Bank Transfer Details -->
+                        <div id="bank_details" class="payment-details">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-university me-2"></i>Bank Transfer Details</h6>
+                            <div class="alert alert-info">
+                                <strong>Account Information:</strong><br>
+                                Bank: Ghana Commercial Bank (GCB)<br>
+                                Account Name: Land Administration Services<br>
+                                Account Number: 1234567890<br>
+                                Branch: Head Office, Accra<br>
+                                Sort Code: 123456<br>
+                                <hr class="my-2">
+                                <strong>Amount to Transfer:</strong> GHC {{ "{:,.2f}".format(amount) }}<br>
+                                <strong>Reference:</strong> {{ application.application_number }}<br>
+                                <small>Please use your application number as reference when making the transfer</small>
+                            </div>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-clock me-2"></i>
+                                Bank transfers may take 1-2 business days to reflect. You will receive confirmation via email.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-pay mt-4" id="payButton">
+                            <i class="fas fa-check-circle me-2"></i>Pay GHC {{ "{:,.2f}".format(amount) }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Payment method selection
+    document.querySelectorAll('.payment-method').forEach(method => {
+        method.addEventListener('click', () => {
+            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+            method.classList.add('selected');
+            const selectedMethod = method.dataset.method;
+            document.getElementById('payment_method').value = selectedMethod;
+
+            document.querySelectorAll('.payment-details').forEach(detail => detail.classList.remove('active'));
+
+            if (selectedMethod === 'mtn') {
+                document.getElementById('mtn_details').classList.add('active');
+            } else if (selectedMethod === 'telecel') {
+                document.getElementById('telecel_details').classList.add('active');
+            } else if (selectedMethod === 'airteltigo') {
+                document.getElementById('airteltigo_details').classList.add('active');
+            } else if (selectedMethod === 'mastercard' || selectedMethod === 'visa') {
+                document.getElementById('card_details').classList.add('active');
+            } else if (selectedMethod === 'bank') {
+                document.getElementById('bank_details').classList.add('active');
+            }
+        });
+    });
+
+    // Format card number
+    const cardNumberInput = document.getElementById('card_number');
+    if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/\s/g, '');
+            if (value.length > 0) {
+                value = value.match(/.{1,4}/g);
+                if (value) this.value = value.join(' ');
+            }
+        });
+    }
+
+    // Format expiry date
+    const expiryDateInput = document.getElementById('expiry_date');
+    if (expiryDateInput) {
+        expiryDateInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/\//g, '');
+            if (value.length >= 2) this.value = value.slice(0, 2) + '/' + value.slice(2, 4);
+        });
+    }
+
+    // Form validation
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        const paymentMethod = document.getElementById('payment_method').value;
+        if (!paymentMethod) {
+            e.preventDefault();
+            alert('Please select a payment method');
+            return false;
+        }
+
+        if (paymentMethod === 'mtn') {
+            const mtnNumber = document.getElementById('mtn_number').value;
+            if (!mtnNumber || mtnNumber.length < 10) {
+                e.preventDefault();
+                alert('Please enter a valid MTN phone number');
+                return false;
+            }
+        } else if (paymentMethod === 'telecel') {
+            const telecelNumber = document.getElementById('telecel_number').value;
+            if (!telecelNumber || telecelNumber.length < 10) {
+                e.preventDefault();
+                alert('Please enter a valid Telecel phone number');
+                return false;
+            }
+        } else if (paymentMethod === 'airteltigo') {
+            const airteltigoNumber = document.getElementById('airteltigo_number').value;
+            if (!airteltigoNumber || airteltigoNumber.length < 10) {
+                e.preventDefault();
+                alert('Please enter a valid AirtelTigo phone number');
+                return false;
+            }
+        } else if (paymentMethod === 'mastercard' || paymentMethod === 'visa') {
+            const cardNumber = document.getElementById('card_number').value.replace(/\s/g, '');
+            const expiry = document.getElementById('expiry_date').value;
+            const cvv = document.getElementById('cvv').value;
+            const cardholder = document.getElementById('cardholder_name').value;
+
+            if (cardNumber.length < 16) {
+                e.preventDefault();
+                alert('Please enter a valid card number');
+                return false;
+            }
+            if (!expiry || expiry.length < 5) {
+                e.preventDefault();
+                alert('Please enter valid expiry date');
+                return false;
+            }
+            if (!cvv || cvv.length < 3) {
+                e.preventDefault();
+                alert('Please enter valid CVV');
+                return false;
+            }
+            if (!cardholder) {
+                e.preventDefault();
+                alert('Please enter cardholder name');
+                return false;
+            }
+        }
+
+        const payButton = document.getElementById('payButton');
+        payButton.disabled = true;
+        payButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing Payment...';
+        return true;
+    });
+</script>
+{% endblock %}

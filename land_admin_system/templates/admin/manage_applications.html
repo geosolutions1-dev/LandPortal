@@ -1,0 +1,289 @@
+<!-- templates/admin/manage_applications.html -->
+{% extends "base_private.html" %}
+
+{% block title %}Manage Applications{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="fw-bold mb-1">Manage Applications</h4>
+                    <p class="text-muted small mb-0">Review and process all land administration applications</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-2 mb-3">
+        <div class="col-md-3 col-6">
+            <div class="card text-center p-2">
+                <small class="text-muted">Total</small>
+                <h5 class="fw-bold mb-0">{{ applications|length }}</h5>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center p-2">
+                <small class="text-muted">Pending</small>
+                <h5 class="fw-bold mb-0 text-warning">
+                    {% set count = applications|selectattr('status', 'equalto', 'pending')|list|length %}
+                    {{ count }}
+                </h5>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center p-2">
+                <small class="text-muted">Under Review</small>
+                <h5 class="fw-bold mb-0 text-info">
+                    {% set count = applications|selectattr('status', 'equalto', 'under_review')|list|length %}
+                    {{ count }}
+                </h5>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="card text-center p-2">
+                <small class="text-muted">Completed</small>
+                <h5 class="fw-bold mb-0 text-success">
+                    {% set count = applications|selectattr('status', 'equalto', 'completed')|list|length %}
+                    {{ count }}
+                </h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <ul class="nav nav-tabs mb-3" style="font-size: 0.75rem;">
+        <li class="nav-item">
+            <a class="nav-link active" data-status="all" href="#" onclick="filterApplications('all'); return false;">All</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-status="pending" href="#" onclick="filterApplications('pending'); return false;">Pending</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-status="payment_made" href="#" onclick="filterApplications('payment_made'); return false;">Payment Made</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-status="under_review" href="#" onclick="filterApplications('under_review'); return false;">Under Review</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-status="completed" href="#" onclick="filterApplications('completed'); return false;">Completed</a>
+        </li>
+    </ul>
+
+    <div class="card">
+        <div class="card-header bg-white py-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0">All Applications</h6>
+                <div>
+                    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search..." style="width: 200px;">
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="applicationsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>App Number</th>
+                            <th>Applicant</th>
+                            <th>Contact</th>
+                            <th>Service</th>
+                            <th>Location</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr data-status="{{ app.status }}">
+                            <td>{{ app.id }}</td>
+                            <td><small><strong>{{ app.application_number }}</strong></small></td>
+                            <td><small>{{ app.full_name }}</small></td>
+                            <td>
+                                <small>{{ app.email }}</small><br>
+                                <small class="text-muted">{{ app.phone }}</small>
+                            </td>
+                            <td><small>{{ app.service_type|replace('_', ' ')|title }}</small></td>
+                            <td><small>{{ app.property_location }}</small></td>
+                            <td><small>GHC 200</small></td>
+                            <td>
+                                <select class="form-select form-select-sm status-select" data-app-id="{{ app.id }}" style="width: 110px; font-size: 0.7rem;">
+                                    <option value="pending" {% if app.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="documents_uploaded" {% if app.status == 'documents_uploaded' %}selected{% endif %}>Docs Uploaded</option>
+                                    <option value="payment_made" {% if app.status == 'payment_made' %}selected{% endif %}>Payment Made</option>
+                                    <option value="under_review" {% if app.status == 'under_review' %}selected{% endif %}>Under Review</option>
+                                    <option value="approved" {% if app.status == 'approved' %}selected{% endif %}>Approved</option>
+                                    <option value="rejected" {% if app.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                    <option value="completed" {% if app.status == 'completed' %}selected{% endif %}>Completed</option>
+                                </select>
+                            </td>
+                            <td><small>{{ app.created_at[:10] }}</small></td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('application_detail', app_id=app.id) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-success send-communication"
+                                            data-app-id="{{ app.id }}"
+                                            data-applicant="{{ app.full_name }}"
+                                            data-email="{{ app.email }}"
+                                            data-phone="{{ app.phone }}"
+                                            title="Send Message">
+                                        <i class="fas fa-comment"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Communication Modal -->
+<div class="modal fade" id="communicationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 0.75rem 1rem;">
+                <h6 class="modal-title">
+                    <i class="fas fa-comment-dots me-2"></i>Send Communication
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding: 1rem;">
+                <input type="hidden" id="commAppId">
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">To:</label>
+                    <input type="text" id="commRecipient" class="form-control form-control-sm" readonly>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Communication Method</label>
+                    <select id="commMethod" class="form-select form-select-sm">
+                        <option value="email">📧 Email</option>
+                        <option value="whatsapp">💬 WhatsApp</option>
+                        <option value="phone">📞 Phone Call</option>
+                        <option value="zoom">🎥 Zoom/Team Meeting</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold">Message</label>
+                    <textarea id="commMessage" class="form-control form-control-sm" rows="3" placeholder="Type your message here..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 0.75rem 1rem;">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="sendCommunication()">Send Message</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Status update
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const appId = this.dataset.appId;
+            const newStatus = this.value;
+
+            fetch(`/admin/update_status/${appId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `status=${newStatus}&notes=Status updated by admin`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Status updated!');
+                    location.reload();
+                }
+            });
+        });
+    });
+
+    // Communication modal
+    let currentAppId = null;
+
+    document.querySelectorAll('.send-communication').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentAppId = this.dataset.appId;
+            const applicantName = this.dataset.applicant;
+            const email = this.dataset.email;
+            const phone = this.dataset.phone;
+
+            document.getElementById('commAppId').value = currentAppId;
+            document.getElementById('commRecipient').value = `${applicantName} (${email} / ${phone})`;
+
+            const modal = new bootstrap.Modal(document.getElementById('communicationModal'));
+            modal.show();
+        });
+    });
+
+    function sendCommunication() {
+        const appId = document.getElementById('commAppId').value;
+        const method = document.getElementById('commMethod').value;
+        const message = document.getElementById('commMessage').value;
+
+        if (!message) {
+            alert('Please enter a message');
+            return;
+        }
+
+        fetch(`/send_engagement/${appId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `engagement_type=${method}&message=${encodeURIComponent(message)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Message sent!');
+                bootstrap.Modal.getInstance(document.getElementById('communicationModal')).hide();
+                document.getElementById('commMessage').value = '';
+            }
+        });
+    }
+
+    // Filter applications
+    function filterApplications(status) {
+        const rows = document.querySelectorAll('#applicationsTable tbody tr');
+
+        rows.forEach(row => {
+            if (status === 'all' || row.dataset.status === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.nav-link').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.status === status || (status === 'all' && tab.dataset.status === 'all')) {
+                tab.classList.add('active');
+            }
+        });
+    }
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#applicationsTable tbody tr');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,453 @@
+<!-- templates/profile.html -->
+{% extends "base_private.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .profile-header h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #1e293b;
+    }
+
+    .profile-header p {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        margin-bottom: 24px;
+    }
+
+    .profile-avatar-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 40px;
+        text-align: center;
+        color: white;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        font-size: 56px;
+        font-weight: 700;
+        color: white;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .profile-avatar-section h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .profile-avatar-section p {
+        opacity: 0.8;
+        margin: 0;
+    }
+
+    .profile-info-section {
+        padding: 30px;
+    }
+
+    .info-table {
+        width: 100%;
+    }
+
+    .info-table tr {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .info-table td {
+        padding: 15px 0;
+    }
+
+    .info-table td:first-child {
+        font-weight: 600;
+        color: #475569;
+        width: 35%;
+    }
+
+    .info-table td:last-child {
+        color: #1e293b;
+    }
+
+    .info-table td:last-child strong {
+        color: #0f172a;
+    }
+
+    .badge-verified {
+        background: #10b981;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .badge-pending {
+        background: #f59e0b;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .btn-edit-profile {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+    .btn-edit-profile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(59,130,246,0.3);
+    }
+
+    /* Modal Styles */
+    .edit-modal .modal-content {
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .edit-modal .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 20px 25px;
+    }
+
+    .edit-modal .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .form-group-modal {
+        margin-bottom: 20px;
+    }
+
+    .form-group-modal label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        color: #334155;
+    }
+
+    .form-group-modal input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        transition: all 0.2s;
+    }
+
+    .form-group-modal input:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+
+    .modal-footer {
+        padding: 20px 25px;
+        border-top: 1px solid #e2e8f0;
+        gap: 10px;
+    }
+
+    .alert-message {
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 0.85rem;
+        display: none;
+    }
+
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .btn-back {
+        background: #f1f5f9;
+        color: #475569;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        flex: 1;
+    }
+
+    .btn-back:hover {
+        background: #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h2>My Profile</h2>
+        <p>View and manage your personal information</p>
+    </div>
+
+    <!-- Alert Messages -->
+    <div id="alertMessage" class="alert-message"></div>
+
+    <!-- Profile Card -->
+    <div class="profile-card">
+        <div class="profile-avatar-section">
+            <div class="profile-avatar">
+                {{ user.full_name[0] if user.full_name else 'U' }}
+            </div>
+            <h3>{{ user.full_name }}</h3>
+            <p>{{ user.user_type|title }}</p>
+        </div>
+
+        <div class="profile-info-section">
+            <table class="info-table">
+                <tr>
+                    <td>National ID</td>
+                    <td><strong>{{ user.national_id }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Full Name</td>
+                    <td><strong id="profileFullName">{{ user.full_name }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Email Address</td>
+                    <td><strong id="profileEmail">{{ user.email }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Phone Number</td>
+                    <td><strong id="profilePhone">{{ user.phone }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Account Type</td>
+                    <td><strong>{{ user.user_type|title }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Verification Status</td>
+                    <td>
+                        {% if user.is_verified %}
+                            <span class="badge-verified">✓ Verified</span>
+                        {% else %}
+                            <span class="badge-pending">⏳ Pending Verification</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Member Since</td>
+                    <td><strong>{{ user.created_at[:10] if user.created_at else 'N/A' }}</strong></td>
+                </tr>
+                <tr>
+                    <td>Last Login</td>
+                    <td><strong>{{ user.last_login[:19] if user.last_login else 'First login' }}</strong></td>
+                </tr>
+            </table>
+
+            <button class="btn-edit-profile" onclick="openEditModal()">
+                <i class="fas fa-edit me-2"></i>Edit Profile
+            </button>
+
+            <div class="action-buttons">
+                <a href="{{ url_for('dashboard') }}" class="btn-back">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade edit-modal" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title">Edit Profile</h5>
+                    <p class="mb-0 opacity-75">Update your personal information</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group-modal">
+                    <label>Full Name</label>
+                    <input type="text" id="editFullName" class="form-control" value="{{ user.full_name }}">
+                </div>
+                <div class="form-group-modal">
+                    <label>Email Address</label>
+                    <input type="email" id="editEmail" class="form-control" value="{{ user.email }}">
+                </div>
+                <div class="form-group-modal">
+                    <label>Phone Number</label>
+                    <input type="tel" id="editPhone" class="form-control" value="{{ user.phone }}">
+                </div>
+                <div class="form-group-modal">
+                    <label>National ID</label>
+                    <input type="text" class="form-control" value="{{ user.national_id }}" readonly disabled>
+                    <small class="text-muted">National ID cannot be changed</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveProfileChanges()">
+                    <i class="fas fa-save me-2"></i>Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEditModal() {
+        // Populate modal with current values
+        document.getElementById('editFullName').value = document.getElementById('profileFullName').innerText;
+        document.getElementById('editEmail').value = document.getElementById('profileEmail').innerText;
+        document.getElementById('editPhone').value = document.getElementById('profilePhone').innerText;
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+        modal.show();
+    }
+
+    function saveProfileChanges() {
+        const newFullName = document.getElementById('editFullName').value;
+        const newEmail = document.getElementById('editEmail').value;
+        const newPhone = document.getElementById('editPhone').value;
+
+        // Validate inputs
+        if (!newFullName || !newEmail || !newPhone) {
+            showAlert('Please fill in all fields', 'error');
+            return;
+        }
+
+        if (!newEmail.includes('@')) {
+            showAlert('Please enter a valid email address', 'error');
+            return;
+        }
+
+        // Send update to server
+        fetch('/update-profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                full_name: newFullName,
+                email: newEmail,
+                phone: newPhone
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the profile display
+                document.getElementById('profileFullName').innerText = newFullName;
+                document.getElementById('profileEmail').innerText = newEmail;
+                document.getElementById('profilePhone').innerText = newPhone;
+
+                // Update the avatar section
+                const avatarDiv = document.querySelector('.profile-avatar');
+                if (avatarDiv) {
+                    avatarDiv.innerText = newFullName.charAt(0);
+                }
+                const nameHeader = document.querySelector('.profile-avatar-section h3');
+                if (nameHeader) {
+                    nameHeader.innerText = newFullName;
+                }
+
+                // Update session name display in sidebar
+                const userNameElement = document.querySelector('.user-name');
+                if (userNameElement) {
+                    userNameElement.innerText = newFullName.split(' ')[0];
+                }
+
+                const avatarElement = document.querySelector('.avatar');
+                if (avatarElement) {
+                    avatarElement.innerText = newFullName.charAt(0);
+                }
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+                modal.hide();
+
+                // Show success message
+                showAlert('Profile updated successfully!', 'success');
+
+                // Reload page after 2 seconds
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                showAlert(data.error || 'Error updating profile', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Error updating profile', 'error');
+        });
+    }
+
+    function showAlert(message, type) {
+        const alertDiv = document.getElementById('alertMessage');
+        alertDiv.className = `alert-message alert-${type}`;
+        alertDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}`;
+        alertDiv.style.display = 'block';
+
+        // Scroll to alert
+        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Auto hide after 4 seconds
+        setTimeout(() => {
+            alertDiv.style.display = 'none';
+        }, 4000);
+    }
+</script>
+{% endblock %}
