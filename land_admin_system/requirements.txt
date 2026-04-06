@@ -1,5 +1,4 @@
-# Create new requirements.txt with correct content
-echo Flask==2.3.3 > requirements.txt
-echo Werkzeug==2.3.7 >> requirements.txt
-echo python-dotenv==1.0.0 >> requirements.txt
-echo gunicorn==21.2.0 >> requirements.txt
+Flask==2.3.3
+Werkzeug==2.3.7
+python-dotenv==1.0.0
+gunicorn==21.2.0
