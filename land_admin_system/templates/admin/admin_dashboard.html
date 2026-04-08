@@ -1,0 +1,816 @@
+<!-- templates/admin/admin_dashboard.html -->
+{% extends "base_private.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .stat-card h3 {
+            font-size: 1rem;
+        }
+        .stat-card h6 {
+            font-size: 0.7rem;
+        }
+        .table {
+            font-size: 0.7rem;
+        }
+        .table td, .table th {
+            padding: 0.3rem;
+        }
+        .btn-sm {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.65rem;
+        }
+        .pagination .page-link {
+            padding: 0.2rem 0.5rem;
+            font-size: 0.7rem;
+        }
+        .card-header h5, .card-header h6 {
+            font-size: 0.85rem;
+        }
+        .filter-bar {
+            flex-direction: column;
+            gap: 10px;
+        }
+        .filter-bar select, .filter-bar input {
+            width: 100% !important;
+        }
+        .bulk-actions {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+        .bulk-actions .btn-group {
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+    }
+
+    .stat-card {
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .pagination .page-link {
+        color: #3b82f6;
+        border-radius: 8px;
+        margin: 0 2px;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8fafc;
+        cursor: pointer;
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+    }
+
+    .filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .service-info {
+        background: #f1f5f9;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+    }
+
+    .service-info i {
+        color: #3b82f6;
+        margin-right: 8px;
+    }
+
+    .search-box {
+        position: relative;
+    }
+
+    .search-box input {
+        padding-left: 30px;
+        font-size: 0.8rem;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+
+    .bulk-actions {
+        background: #f8fafc;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .selected-count {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #1e40af;
+    }
+
+    .checkbox-col {
+        width: 40px;
+        text-align: center;
+    }
+
+    .select-all-checkbox {
+        cursor: pointer;
+    }
+
+    .row-checkbox {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+
+    .communication-modal .modal-content {
+        border-radius: 16px;
+    }
+
+    .communication-modal .modal-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border-radius: 16px 16px 0 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h4 class="fw-bold mb-1">Welcome back, {{ session.user_name }}!</h4>
+            <p class="text-muted small">
+                Manage land administration applications and process customer requests
+            </p>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Stats -->
+    <div class="row g-2 g-md-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card p-2 p-md-3 stat-card bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Total Apps</h6>
+                        <h3 class="fw-bold mb-0" id="totalApps">{{ stats.total_applications }}</h3>
+                    </div>
+                    <i class="fas fa-file-alt fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card p-2 p-md-3 stat-card bg-warning text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Pending</h6>
+                        <h3 class="fw-bold mb-0">{{ stats.pending_applications }}</h3>
+                    </div>
+                    <i class="fas fa-clock fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card p-2 p-md-3 stat-card bg-success text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Completed</h6>
+                        <h3 class="fw-bold mb-0">{{ stats.completed_applications }}</h3>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card p-2 p-md-3 stat-card bg-info text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Revenue</h6>
+                        <h3 class="fw-bold mb-0 fs-5">GHC {{ "{:,.0f}".format(stats.total_revenue) }}</h3>
+                    </div>
+                    <i class="fas fa-money-bill fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications List Card -->
+    <div class="card">
+        <div class="card-header bg-white py-3">
+            <div class="filter-bar">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <div>
+                        <label class="form-label small fw-bold mb-1">Filter by Service</label>
+                        <select id="serviceFilter" class="form-select form-select-sm" style="width: 200px;">
+                            <option value="all">📊 All Services</option>
+                            <option value="land_transfer">🏠 Land Transfer</option>
+                            <option value="surveying_mapping">📍 Surveying & Mapping</option>
+                            <option value="boundaries">📐 Boundary Demarcation</option>
+                            <option value="land_search">🔍 Land Search</option>
+                            <option value="title_deed">📄 Title Deed Processing</option>
+                            <option value="land_valuation">💰 Land Valuation</option>
+                            <option value="lease_registration">🤝 Lease Registration</option>
+                            <option value="topographic_surveying">🗺️ Topographic Surveying</option>
+                            <option value="building_plan_approval">🏗️ Building Plan Approval</option>
+                            <option value="land_consolidation">🔗 Land Consolidation</option>
+                            <option value="land_subdivision">✂️ Land Subdivision</option>
+                            <option value="change_of_user">🔄 Change of User</option>
+                        </select>
+                    </div>
+
+                    <div class="service-info" id="serviceInfo">
+                        <i class="fas fa-chart-bar"></i>
+                        <span id="serviceCount">Loading...</span>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search by name or app number..." style="width: 250px;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-actions" id="bulkActions" style="display: none;">
+            <div>
+                <i class="fas fa-check-circle text-primary me-2"></i>
+                <span class="selected-count" id="selectedCount">0 applications selected</span>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-primary" onclick="openCommunicationModal('email')">
+                    <i class="fas fa-envelope me-1"></i> Send Email
+                </button>
+                <button class="btn btn-sm btn-outline-success" onclick="openCommunicationModal('whatsapp')">
+                    <i class="fab fa-whatsapp me-1"></i> Send WhatsApp
+                </button>
+                <button class="btn btn-sm btn-outline-warning" onclick="openCommunicationModal('phone')">
+                    <i class="fas fa-phone me-1"></i> Schedule Call
+                </button>
+                <button class="btn btn-sm btn-outline-info" onclick="openCommunicationModal('zoom')">
+                    <i class="fas fa-video me-1"></i> Zoom Meeting
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="clearSelection()">
+                    <i class="fas fa-times me-1"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="applicationsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="checkbox-col">
+                                <input type="checkbox" id="selectAllCheckbox" class="select-all-checkbox" onclick="toggleSelectAll()">
+                            </th>
+                            <th>App No.</th>
+                            <th>Applicant</th>
+                            <th>Service</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-between align-items-center p-3 border-top flex-wrap gap-2">
+                <div class="text-muted small" id="showingInfo">
+                    Showing 0 to 0 of 0 entries
+                </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination mb-0" id="paginationControls">
+                        <!-- Pagination will be inserted here -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Quick Actions -->
+    <div class="row g-2 g-md-3 mt-3">
+        <div class="col-12 col-md-4">
+            <div class="card text-center p-2 p-md-3">
+                <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                <h6 class="fw-bold mb-1">Send Communications</h6>
+                <p class="small text-muted mb-2">Email, WhatsApp, or call applicants</p>
+                <a href="{{ url_for('manage_applications') }}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card text-center p-2 p-md-3">
+                <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                <h6 class="fw-bold mb-1">View Reports</h6>
+                <p class="small text-muted mb-2">Analytics and statistics</p>
+                <a href="{{ url_for('reports') }}" class="btn btn-sm btn-success">View Reports</a>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card text-center p-2 p-md-3">
+                <i class="fas fa-users fa-2x text-info mb-2"></i>
+                <h6 class="fw-bold mb-1">Manage Users</h6>
+                <p class="small text-muted mb-2">View and manage applicants</p>
+                <a href="{{ url_for('manage_users') }}" class="btn btn-sm btn-info text-white">Manage Users</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Communication Modal -->
+<div class="modal fade communication-modal" id="communicationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Send Communication</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="commMethod">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Recipients</label>
+                    <div class="bg-light p-2 rounded" style="max-height: 150px; overflow-y: auto;">
+                        <ul class="list-unstyled mb-0" id="recipientsList"></ul>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Message</label>
+                    <textarea id="commMessage" class="form-control" rows="5" placeholder="Type your message here..."></textarea>
+                </div>
+                <div class="alert alert-info small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    This message will be sent to all selected applicants based on their preferred engagement mode.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendBulkCommunication()">
+                    <i class="fas fa-paper-plane me-1"></i> Send
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allApplications = [];
+    let currentPage = 1;
+    let itemsPerPage = 10;
+    let currentService = 'all';
+    let searchTerm = '';
+    let selectedApplications = new Set();
+
+    // Service display names
+    const serviceNames = {
+        'land_transfer': 'Land Transfer',
+        'surveying_mapping': 'Surveying & Mapping',
+        'boundaries': 'Boundary Demarcation',
+        'land_search': 'Land Search',
+        'title_deed': 'Title Deed Processing',
+        'land_valuation': 'Land Valuation',
+        'lease_registration': 'Lease Registration',
+        'topographic_surveying': 'Topographic Surveying',
+        'building_plan_approval': 'Building Plan Approval',
+        'land_consolidation': 'Land Consolidation',
+        'land_subdivision': 'Land Subdivision',
+        'change_of_user': 'Change of User'
+    };
+
+    // Load applications from server
+    async function loadApplications() {
+        try {
+            const response = await fetch('/api/admin-applications');
+            const data = await response.json();
+            allApplications = data.applications;
+            updateServiceInfo();
+            renderTable();
+        } catch (error) {
+            console.error('Error loading applications:', error);
+        }
+    }
+
+    // Update service info display
+    function updateServiceInfo() {
+        const filtered = getFilteredAndSearchedApplications();
+        const total = filtered.length;
+        const serviceName = currentService === 'all' ? 'All Services' : serviceNames[currentService];
+        document.getElementById('serviceCount').innerHTML = `<strong>${serviceName}</strong>: ${total} application${total !== 1 ? 's' : ''}`;
+    }
+
+    // Get filtered applications by service and search
+    function getFilteredAndSearchedApplications() {
+        let filtered = allApplications;
+
+        if (currentService !== 'all') {
+            filtered = filtered.filter(app => app.service_type === currentService);
+        }
+
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(app =>
+                app.application_number.toLowerCase().includes(term) ||
+                app.full_name.toLowerCase().includes(term) ||
+                app.email.toLowerCase().includes(term) ||
+                (app.property_location && app.property_location.toLowerCase().includes(term))
+            );
+        }
+
+        return filtered;
+    }
+
+    // Sort applications by date (ascending - oldest first)
+    function sortApplications(applications) {
+        return [...applications].sort((a, b) => {
+            return new Date(a.created_at) - new Date(b.created_at);
+        });
+    }
+
+    // Get status badge HTML
+    function getStatusBadge(status) {
+        const badges = {
+            'pending': '<span class="badge bg-warning">⏳ Pending</span>',
+            'documents_uploaded': '<span class="badge bg-info">📄 Documents Uploaded</span>',
+            'documents_skipped': '<span class="badge bg-secondary">⏭️ Documents Skipped</span>',
+            'payment_made': '<span class="badge bg-primary">💰 Payment Made</span>',
+            'under_review': '<span class="badge bg-info">🔍 Under Review</span>',
+            'approved': '<span class="badge bg-success">✅ Approved</span>',
+            'rejected': '<span class="badge bg-danger">❌ Rejected</span>',
+            'completed': '<span class="badge bg-success">🎉 Completed</span>'
+        };
+        return badges[status] || `<span class="badge bg-secondary">${status}</span>`;
+    }
+
+    // Request document from applicant
+    function requestDocument(appId) {
+        const docType = prompt('Enter document type required (e.g., Title Deed, ID Copy, etc.):');
+        if (!docType) return;
+
+        const message = prompt('Enter message to applicant explaining what document is needed:');
+        if (!message) return;
+
+        fetch(`/admin/request_document/${appId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `document_type=${encodeURIComponent(docType)}&message=${encodeURIComponent(message)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Document request sent to applicant!');
+            } else {
+                alert('Error sending request: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error sending request');
+        });
+    }
+
+    // Render table with pagination
+    function renderTable() {
+        const filtered = getFilteredAndSearchedApplications();
+        const sorted = sortApplications(filtered);
+        const total = sorted.length;
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, total);
+        const pageApplications = sorted.slice(startIndex, endIndex);
+
+        const tbody = document.getElementById('applicationsTableBody');
+
+        if (pageApplications.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <i class="fas fa-folder-open fa-3x text-muted mb-3 d-block"></i>
+                        <p class="text-muted mb-0">No applications found</p>
+                        ${searchTerm ? '<small class="text-muted">Try adjusting your search or filter</small>' : ''}
+                    </td>
+                </tr>
+            `;
+        } else {
+            tbody.innerHTML = pageApplications.map(app => `
+                <tr>
+                    <td class="checkbox-col">
+                        <input type="checkbox" class="row-checkbox" data-app-id="${app.id}" data-app-name="${app.full_name}" data-app-email="${app.email}" data-app-phone="${app.phone}" data-engagement-mode="${app.engagement_mode || 'email'}" onclick="toggleSelection(${app.id})">
+                    </td>
+                    <td><small><strong>${app.application_number}</strong></small></td>
+                    <td>
+                        <small>${app.full_name}</small><br>
+                        <small class="text-muted">${app.email}</small>
+                    </td>
+                    <td><small>${serviceNames[app.service_type] || app.service_type.replace('_', ' ').title()}</small></td>
+                    <td><small>${app.property_location || 'N/A'}</small></td>
+                    <td>${getStatusBadge(app.status)}</small></td>
+                    <td><small>${app.created_at.substring(0, 10)}</small></td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="/application_detail/${app.id}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button class="btn btn-sm btn-outline-warning" onclick="requestDocument(${app.id})" title="Request Document">
+                                <i class="fas fa-file-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update showing info
+        const showingStart = total === 0 ? 0 : startIndex + 1;
+        const showingEnd = endIndex;
+        document.getElementById('showingInfo').innerHTML = `Showing ${showingStart} to ${showingEnd} of ${total} entries`;
+
+        renderPagination(total);
+        updateServiceInfo();
+        updateSelectAllCheckbox();
+        updateBulkActionsBar();
+    }
+
+    // Render pagination controls
+    function renderPagination(total) {
+        const totalPages = Math.ceil(total / itemsPerPage);
+        const paginationContainer = document.getElementById('paginationControls');
+
+        if (totalPages <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">« Prev</a>
+                </li>`;
+
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        if (startPage > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(1); return false;">1</a></li>`;
+            if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<li class="page-item ${currentPage === i ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
+                    </li>`;
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a></li>`;
+        }
+
+        html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Next »</a>
+                </li>`;
+
+        paginationContainer.innerHTML = html;
+    }
+
+    function changePage(page) {
+        const filtered = getFilteredAndSearchedApplications();
+        const totalPages = Math.ceil(filtered.length / itemsPerPage);
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderTable();
+        document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Selection functions
+    function toggleSelection(appId) {
+        if (selectedApplications.has(appId)) {
+            selectedApplications.delete(appId);
+        } else {
+            const app = allApplications.find(a => a.id == appId);
+            if (app) {
+                selectedApplications.add(appId);
+            }
+        }
+        updateBulkActionsBar();
+        updateSelectAllCheckbox();
+    }
+
+    function toggleSelectAll() {
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const filtered = getFilteredAndSearchedApplications();
+        const sorted = sortApplications(filtered);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, sorted.length);
+        const pageApplications = sorted.slice(startIndex, endIndex);
+
+        if (selectAllCheckbox.checked) {
+            pageApplications.forEach(app => {
+                selectedApplications.add(app.id);
+            });
+        } else {
+            pageApplications.forEach(app => {
+                selectedApplications.delete(app.id);
+            });
+        }
+
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+            const appId = parseInt(cb.dataset.appId);
+            cb.checked = selectedApplications.has(appId);
+        });
+
+        updateBulkActionsBar();
+    }
+
+    function updateSelectAllCheckbox() {
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const filtered = getFilteredAndSearchedApplications();
+        const sorted = sortApplications(filtered);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, sorted.length);
+        const pageApplications = sorted.slice(startIndex, endIndex);
+
+        const allSelected = pageApplications.length > 0 && pageApplications.every(app => selectedApplications.has(app.id));
+        selectAllCheckbox.checked = allSelected;
+    }
+
+    function updateBulkActionsBar() {
+        const bulkActions = document.getElementById('bulkActions');
+        const selectedCount = document.getElementById('selectedCount');
+        const count = selectedApplications.size;
+
+        if (count > 0) {
+            bulkActions.style.display = 'flex';
+            selectedCount.innerHTML = `${count} application${count !== 1 ? 's' : ''} selected`;
+        } else {
+            bulkActions.style.display = 'none';
+        }
+    }
+
+    function clearSelection() {
+        selectedApplications.clear();
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+            cb.checked = false;
+        });
+        document.getElementById('selectAllCheckbox').checked = false;
+        updateBulkActionsBar();
+    }
+
+    // Communication functions
+    let currentCommunicationMethod = '';
+
+    function openCommunicationModal(method) {
+        if (selectedApplications.size === 0) {
+            alert('Please select at least one application first');
+            return;
+        }
+
+        currentCommunicationMethod = method;
+        const modalTitle = document.getElementById('modalTitle');
+        const methodNames = {
+            'email': 'Send Email',
+            'whatsapp': 'Send WhatsApp',
+            'phone': 'Schedule Phone Call',
+            'zoom': 'Schedule Zoom Meeting'
+        };
+        modalTitle.innerHTML = `<i class="fas fa-${method === 'email' ? 'envelope' : method === 'whatsapp' ? 'fa-whatsapp' : method === 'phone' ? 'phone' : 'video'} me-2"></i>${methodNames[method]}`;
+
+        const recipientsList = document.getElementById('recipientsList');
+        const selectedApps = allApplications.filter(app => selectedApplications.has(app.id));
+
+        recipientsList.innerHTML = selectedApps.map(app => `
+            <li class="mb-2 pb-2 border-bottom">
+                <div class="fw-bold">${app.full_name}</div>
+                <div class="small text-muted">
+                    <i class="fas fa-envelope me-1"></i>${app.email}<br>
+                    <i class="fas fa-phone me-1"></i>${app.phone}
+                </div>
+                <div class="small">
+                    <span class="badge bg-info">Preferred: ${app.engagement_mode || 'email'}</span>
+                </div>
+            </li>
+        `).join('');
+
+        document.getElementById('commMethod').value = method;
+        document.getElementById('commMessage').value = '';
+
+        const modal = new bootstrap.Modal(document.getElementById('communicationModal'));
+        modal.show();
+    }
+
+    function sendBulkCommunication() {
+        const method = document.getElementById('commMethod').value;
+        const message = document.getElementById('commMessage').value;
+
+        if (!message.trim()) {
+            alert('Please enter a message');
+            return;
+        }
+
+        const selectedApps = allApplications.filter(app => selectedApplications.has(app.id));
+
+        if (selectedApps.length === 0) {
+            alert('No applications selected');
+            return;
+        }
+
+        let successCount = 0;
+        let failCount = 0;
+        let completed = 0;
+
+        selectedApps.forEach(app => {
+            fetch(`/send_engagement/${app.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `engagement_type=${method}&message=${encodeURIComponent(message)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                completed++;
+                if (data.success) {
+                    successCount++;
+                    console.log(`Message sent to ${app.full_name}`);
+                } else {
+                    failCount++;
+                    console.error(`Failed to send to ${app.full_name}: ${data.error}`);
+                }
+
+                if (completed === selectedApps.length) {
+                    if (successCount > 0) {
+                        alert(`Messages sent successfully to ${successCount} applicant(s)!\n${failCount > 0 ? `Failed: ${failCount}` : ''}`);
+                        clearSelection();
+                        bootstrap.Modal.getInstance(document.getElementById('communicationModal')).hide();
+                        document.getElementById('commMessage').value = '';
+                        location.reload();
+                    } else {
+                        alert('Error sending messages. Please try again.');
+                    }
+                }
+            })
+            .catch(error => {
+                completed++;
+                failCount++;
+                console.error('Fetch error:', error);
+                if (completed === selectedApps.length) {
+                    alert(`Failed to send messages. ${failCount} failed.`);
+                }
+            });
+        });
+    }
+
+    // Handle service filter change
+    document.getElementById('serviceFilter').addEventListener('change', function(e) {
+        currentService = e.target.value;
+        currentPage = 1;
+        searchTerm = '';
+        document.getElementById('searchInput').value = '';
+        clearSelection();
+        renderTable();
+    });
+
+    // Handle search input
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        searchTerm = e.target.value;
+        currentPage = 1;
+        clearSelection();
+        renderTable();
+    });
+
+    // Load applications on page load
+    document.addEventListener('DOMContentLoaded', loadApplications);
+</script>
+{% endblock %}

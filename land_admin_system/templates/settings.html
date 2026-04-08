@@ -1,0 +1,604 @@
+<!-- templates/settings.html -->
+{% extends "base_private.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .settings-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .settings-header h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #1e293b;
+    }
+
+    .settings-header p {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .settings-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        margin-bottom: 24px;
+        transition: all 0.3s;
+    }
+
+    .settings-card:hover {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .settings-header-card {
+        padding: 20px 25px;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .settings-header-card h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .settings-body {
+        padding: 25px;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+    }
+
+    .setting-info h4 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #1e293b;
+    }
+
+    .setting-info p {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        width: 52px;
+        height: 28px;
+        background: #cbd5e1;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .toggle-switch.active {
+        background: #3b82f6;
+    }
+
+    .toggle-switch::after {
+        content: '';
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        top: 2px;
+        left: 3px;
+        transition: all 0.3s;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch.active::after {
+        left: 25px;
+    }
+
+    /* Buttons */
+    .btn-save {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(59,130,246,0.3);
+    }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #475569;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+    }
+
+    /* Modal Styles */
+    .modal-custom {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-custom.active {
+        display: flex;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .modal-content-custom {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 500px;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-custom.active .modal-content-custom {
+        transform: scale(1);
+    }
+
+    .modal-header-custom {
+        padding: 20px 25px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header-custom h4 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #94a3b8;
+        transition: all 0.2s;
+    }
+
+    .modal-close:hover {
+        color: #ef4444;
+    }
+
+    .modal-body-custom {
+        padding: 25px;
+    }
+
+    .modal-footer-custom {
+        padding: 15px 25px 25px;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .form-group-modal {
+        margin-bottom: 20px;
+    }
+
+    .form-group-modal label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        color: #334155;
+    }
+
+    .form-group-modal input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        transition: all 0.2s;
+    }
+
+    .form-group-modal input:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+
+    .alert-custom {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="settings-header">
+        <h2>Settings</h2>
+        <p>Manage your account preferences and security settings</p>
+    </div>
+
+    <!-- Notification Settings -->
+    <div class="settings-card">
+        <div class="settings-header-card">
+            <h3><i class="fas fa-bell me-2"></i>Notifications</h3>
+        </div>
+        <div class="settings-body">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Email Notifications</h4>
+                    <p>Receive updates about your application status</p>
+                </div>
+                <div class="toggle-switch" id="emailToggle"></div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>WhatsApp Notifications</h4>
+                    <p>Get real-time updates via WhatsApp</p>
+                </div>
+                <div class="toggle-switch" id="whatsappToggle"></div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>SMS Notifications</h4>
+                    <p>Receive SMS alerts for important updates</p>
+                </div>
+                <div class="toggle-switch" id="smsToggle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="settings-card">
+        <div class="settings-header-card">
+            <h3><i class="fas fa-shield-alt me-2"></i>Security</h3>
+        </div>
+        <div class="settings-body">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Two-Factor Authentication</h4>
+                    <p>Add an extra layer of security to your account</p>
+                </div>
+                <div class="toggle-switch" id="twoFactorToggle"></div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Change Password</h4>
+                    <p>Update your account password</p>
+                </div>
+                <button class="btn-change-password" onclick="openChangePasswordModal()" style="background: #3b82f6; color: white; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer;">
+                    <i class="fas fa-key me-1"></i>Change Password
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preferences -->
+    <div class="settings-card">
+        <div class="settings-header-card">
+            <h3><i class="fas fa-palette me-2"></i>Preferences</h3>
+        </div>
+        <div class="settings-body">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Dark Mode</h4>
+                    <p>Switch between light and dark theme</p>
+                </div>
+                <div class="toggle-switch" id="darkModeToggle"></div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Language</h4>
+                    <p>Select your preferred language</p>
+                </div>
+                <select id="languageSelect" style="padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <option value="en">English</option>
+                    <option value="tw">Twi</option>
+                    <option value="ga">Ga</option>
+                    <option value="ha">Hausa</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="settings-card">
+        <div class="settings-header-card" style="border-bottom-color: #fee2e2;">
+            <h3 style="color: #dc2626;"><i class="fas fa-exclamation-triangle me-2"></i>Danger Zone</h3>
+        </div>
+        <div class="settings-body">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h4>Delete Account</h4>
+                    <p>Permanently delete your account and all data</p>
+                </div>
+                <button class="btn-danger" onclick="openDeleteAccountModal()">
+                    <i class="fas fa-trash me-1"></i>Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-end gap-3 mt-4">
+        <button class="btn-cancel" onclick="window.location.href='{{ url_for('dashboard') }}'">
+            <i class="fas fa-times me-2"></i>Cancel
+        </button>
+        <button class="btn-save" onclick="saveSettings()">
+            <i class="fas fa-save me-2"></i>Save Changes
+        </button>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div id="changePasswordModal" class="modal-custom">
+    <div class="modal-content-custom">
+        <div class="modal-header-custom">
+            <h4><i class="fas fa-key me-2"></i>Change Password</h4>
+            <button class="modal-close" onclick="closeChangePasswordModal()">&times;</button>
+        </div>
+        <div class="modal-body-custom">
+            <div class="form-group-modal">
+                <label>Current Password</label>
+                <input type="password" id="currentPassword" placeholder="Enter your current password">
+            </div>
+            <div class="form-group-modal">
+                <label>New Password</label>
+                <input type="password" id="newPassword" placeholder="Enter new password">
+                <small class="text-muted">Minimum 8 characters with letters and numbers</small>
+            </div>
+            <div class="form-group-modal">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm your new password">
+            </div>
+        </div>
+        <div class="modal-footer-custom">
+            <button class="btn-cancel" onclick="closeChangePasswordModal()">Cancel</button>
+            <button class="btn-save" onclick="changePassword()">Update Password</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div id="deleteAccountModal" class="modal-custom">
+    <div class="modal-content-custom">
+        <div class="modal-header-custom" style="border-bottom-color: #fee2e2;">
+            <h4 style="color: #dc2626;"><i class="fas fa-exclamation-triangle me-2"></i>Delete Account</h4>
+            <button class="modal-close" onclick="closeDeleteAccountModal()">&times;</button>
+        </div>
+        <div class="modal-body-custom">
+            <div class="alert-custom">
+                <i class="fas fa-warning me-2"></i>
+                <strong>Warning!</strong> This action cannot be undone.
+            </div>
+            <p>Are you sure you want to delete your account? All your data, applications, and documents will be permanently removed.</p>
+            <div class="form-group-modal mt-3">
+                <label>Type <strong>DELETE</strong> to confirm</label>
+                <input type="text" id="confirmDelete" placeholder="Type DELETE to confirm">
+            </div>
+        </div>
+        <div class="modal-footer-custom">
+            <button class="btn-cancel" onclick="closeDeleteAccountModal()">Cancel</button>
+            <button class="btn-danger" onclick="deleteAccount()">Delete Account</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load saved settings from localStorage
+    function loadSettings() {
+        const emailNotifications = localStorage.getItem('emailNotifications') === 'true';
+        const whatsappNotifications = localStorage.getItem('whatsappNotifications') === 'true';
+        const smsNotifications = localStorage.getItem('smsNotifications') === 'true';
+        const twoFactorAuth = localStorage.getItem('twoFactorAuth') === 'true';
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        const language = localStorage.getItem('language') || 'en';
+
+        updateToggle('emailToggle', emailNotifications);
+        updateToggle('whatsappToggle', whatsappNotifications);
+        updateToggle('smsToggle', smsNotifications);
+        updateToggle('twoFactorToggle', twoFactorAuth);
+        updateToggle('darkModeToggle', darkMode);
+
+        document.getElementById('languageSelect').value = language;
+
+        // Apply dark mode if enabled
+        if (darkMode) {
+            document.body.style.backgroundColor = '#1e293b';
+            document.body.style.color = '#f1f5f9';
+        }
+    }
+
+    function updateToggle(toggleId, isActive) {
+        const toggle = document.getElementById(toggleId);
+        if (toggle) {
+            if (isActive) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        }
+    }
+
+    // Toggle click handlers
+    document.querySelectorAll('.toggle-switch').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+    });
+
+    // Modal functions
+    function openChangePasswordModal() {
+        document.getElementById('changePasswordModal').classList.add('active');
+    }
+
+    function closeChangePasswordModal() {
+        document.getElementById('changePasswordModal').classList.remove('active');
+        // Clear inputs
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+    }
+
+    function openDeleteAccountModal() {
+        document.getElementById('deleteAccountModal').classList.add('active');
+    }
+
+    function closeDeleteAccountModal() {
+        document.getElementById('deleteAccountModal').classList.remove('active');
+        document.getElementById('confirmDelete').value = '';
+    }
+
+    // Change password function
+    function changePassword() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alert('New passwords do not match');
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            alert('Password must be at least 8 characters long');
+            return;
+        }
+
+        // Here you would make an API call to change password
+        alert('Password changed successfully!');
+        closeChangePasswordModal();
+    }
+
+    // Delete account function
+    function deleteAccount() {
+        const confirmText = document.getElementById('confirmDelete').value;
+
+        if (confirmText !== 'DELETE') {
+            alert('Please type DELETE to confirm account deletion');
+            return;
+        }
+
+        if (confirm('Are you absolutely sure? This action cannot be undone.')) {
+            // Here you would make an API call to delete account
+            alert('Account deleted successfully. Redirecting to home page...');
+            window.location.href = "{{ url_for('logout') }}";
+        }
+    }
+
+    // Save settings
+    function saveSettings() {
+        const emailNotifications = document.getElementById('emailToggle').classList.contains('active');
+        const whatsappNotifications = document.getElementById('whatsappToggle').classList.contains('active');
+        const smsNotifications = document.getElementById('smsToggle').classList.contains('active');
+        const twoFactorAuth = document.getElementById('twoFactorToggle').classList.contains('active');
+        const darkMode = document.getElementById('darkModeToggle').classList.contains('active');
+        const language = document.getElementById('languageSelect').value;
+
+        localStorage.setItem('emailNotifications', emailNotifications);
+        localStorage.setItem('whatsappNotifications', whatsappNotifications);
+        localStorage.setItem('smsNotifications', smsNotifications);
+        localStorage.setItem('twoFactorAuth', twoFactorAuth);
+        localStorage.setItem('darkMode', darkMode);
+        localStorage.setItem('language', language);
+
+        alert('Settings saved successfully!');
+
+        // Reload page to apply dark mode if changed
+        if (darkMode !== (document.body.style.backgroundColor === 'rgb(30, 41, 59)')) {
+            location.reload();
+        }
+    }
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        const passwordModal = document.getElementById('changePasswordModal');
+        const deleteModal = document.getElementById('deleteAccountModal');
+
+        if (event.target === passwordModal) {
+            closeChangePasswordModal();
+        }
+        if (event.target === deleteModal) {
+            closeDeleteAccountModal();
+        }
+    }
+
+    // Load settings on page load
+    loadSettings();
+</script>
+{% endblock %}
