@@ -1,0 +1,336 @@
+<!-- templates/register.html -->
+{% extends "base_public.html" %}
+
+{% block title %}Register - Land Administration System{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding: 40px 20px;
+    }
+
+    .register-container {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .register-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .register-header {
+        text-align: center;
+        padding: 30px 30px 20px;
+        background: white;
+    }
+
+    .register-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+
+    .register-icon i {
+        font-size: 32px;
+        color: white;
+    }
+
+    .register-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #1e293b;
+    }
+
+    .register-header p {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .register-body {
+        padding: 0 30px 30px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+        color: #334155;
+    }
+
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        transition: all 0.2s;
+        background: white;
+    }
+
+    .input-wrapper:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .input-icon {
+        padding: 10px 0 10px 15px;
+        color: #94a3b8;
+    }
+
+    .input-wrapper input {
+        border: none;
+        padding: 10px 15px 10px 8px;
+        width: 100%;
+        outline: none;
+        background: transparent;
+        font-size: 0.85rem;
+    }
+
+    .input-wrapper input::placeholder {
+        color: #cbd5e1;
+        font-size: 0.8rem;
+    }
+
+    /* Style for uppercase field */
+    .input-wrapper input.uppercase-field {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-family: monospace;
+        font-size: 0.9rem;
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        margin-top: 10px;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.8rem;
+    }
+
+    .login-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+
+    .footer-text {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.65rem;
+        color: #94a3b8;
+    }
+
+    .alert-custom {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 0;
+    }
+
+    .row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    @media (max-width: 550px) {
+        .row {
+            flex-direction: column;
+            gap: 18px;
+        }
+        .register-body {
+            padding: 0 20px 25px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-header">
+            <div class="register-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h2>Create an Account</h2>
+            <p>Join us to access land services</p>
+            <p>=================</p>
+            <p>Please provide valid credentials</p>
+        </div>
+
+        <div class="register-body">
+            {% if error %}
+            <div class="alert-custom">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form method="POST">
+                <div class="row">
+                    <div class="form-group">
+                        <label class="form-label">National ID</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-id-card"></i></span>
+                            <input type="text"
+                                   name="national_id"
+                                   id="national_id"
+                                   class="uppercase-field"
+                                   placeholder="e.g., GHA-123456789"
+                                   required
+                                   autofocus>
+                        </div>
+                        <small class="text-muted" style="font-size: 0.65rem;">Auto-converts to uppercase</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-user"></i></span>
+                            <input type="text" name="full_name" placeholder="John Doe" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                            <input type="email" name="email" placeholder="john@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-phone"></i></span>
+                            <input type="tel" name="phone" placeholder="+233 XX XXX XXXX" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                            <input type="password" name="password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-check-circle"></i></span>
+                            <input type="password" name="confirm_password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-register">
+                    <i class="fas fa-user-plus me-2"></i>Create Account
+                </button>
+            </form>
+
+            <div class="login-link">
+                Already have an account? <a href="{{ url_for('login') }}">Sign In</a>
+            </div>
+
+            <div class="footer-text">
+                <i class="fas fa-shield-alt me-1"></i> Your information is secure<br>
+                By signing up, you agree to our Terms of Service
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Convert National ID to uppercase on keypress
+    document.getElementById('national_id').addEventListener('input', function(e) {
+        // Store cursor position
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+
+        // Convert to uppercase
+        this.value = this.value.toUpperCase();
+
+        // Restore cursor position
+        this.setSelectionRange(start, end);
+    });
+
+    // Also handle paste events to convert pasted text to uppercase
+    document.getElementById('national_id').addEventListener('paste', function(e) {
+        setTimeout(() => {
+            this.value = this.value.toUpperCase();
+        }, 0);
+    });
+
+    // Optional: Add validation for National ID format (example for Ghana)
+    const nationalIdInput = document.getElementById('national_id');
+    nationalIdInput.addEventListener('blur', function() {
+        const value = this.value;
+        if (value && !value.match(/^[A-Z0-9\-]+$/)) {
+            // Show warning if contains invalid characters (optional)
+            this.style.borderColor = '#f59e0b';
+            setTimeout(() => {
+                this.style.borderColor = '';
+            }, 2000);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,252 @@
+<!-- templates/payment_slip.html -->
+{% extends "base_private.html" %}
+
+{% block title %}Payment Slip{% endblock %}
+
+{% block extra_css %}
+<style>
+    .slip-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .slip-header {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .slip-header h2 {
+        margin: 0;
+        font-size: 1.3rem;
+    }
+
+    .slip-header p {
+        margin: 3px 0 0;
+        opacity: 0.9;
+        font-size: 0.7rem;
+    }
+
+    .slip-body {
+        padding: 20px;
+    }
+
+    .info-section {
+        margin-bottom: 15px;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 10px;
+    }
+
+    .info-section h4 {
+        color: #1e40af;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 6px;
+        font-size: 0.75rem;
+    }
+
+    .info-label {
+        width: 120px;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    .info-value {
+        flex: 1;
+        color: #1e293b;
+    }
+
+    .amount {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #059669;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: #d1fae5;
+        color: #065f46;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.7rem;
+    }
+
+    .qr-code {
+        text-align: center;
+        margin: 10px 0;
+    }
+
+    .qr-code img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .slip-footer {
+        background: #f8fafc;
+        padding: 12px 20px;
+        text-align: center;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.65rem;
+        color: #64748b;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    .btn-download {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-download:hover {
+        background: #059669;
+    }
+
+    .qr-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    @media print {
+        .no-print {
+            display: none;
+        }
+        .slip-container {
+            box-shadow: none;
+            margin: 0;
+            padding: 0;
+        }
+        .slip-header {
+            background: #1e40af;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="slip-container">
+        <div class="slip-header">
+            <h2>LAND SERVICES PORTAL</h2>
+            <p>Authentic Portal for Your Land Services</p>
+            <p><strong>PAYMENT RECEIPT</strong></p>
+        </div>
+
+        <div class="slip-body">
+            <!-- QR Code and Receipt Info Row -->
+            <div class="qr-row">
+                <div class="qr-code">
+                    <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code">
+                    <p style="font-size: 0.6rem; margin-top: 5px;">Scan to verify</p>
+                </div>
+                <div style="flex: 1; padding-left: 15px;">
+                    <div class="info-row">
+                        <div class="info-label">Receipt No:</div>
+                        <div class="info-value">RCP-{{ payment.transaction_id }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Date Issued:</div>
+                        <div class="info-value">{{ payment.payment_date[:16] if payment.payment_date else 'N/A' }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Status:</div>
+                        <div class="info-value"><span class="status-badge">COMPLETED</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h4>CUSTOMER INFORMATION</h4>
+                <div class="info-row">
+                    <div class="info-label">Full Name:</div>
+                    <div class="info-value">{{ user.full_name }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">National ID:</div>
+                    <div class="info-value">{{ user.national_id }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Email:</div>
+                    <div class="info-value">{{ user.email }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Phone:</div>
+                    <div class="info-value">{{ user.phone }}</div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h4>PAYMENT DETAILS</h4>
+                <div class="info-row">
+                    <div class="info-label">Application No:</div>
+                    <div class="info-value">{{ application.application_number }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Service Type:</div>
+                    <div class="info-value">{{ application.service_type|replace('_', ' ')|title }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Property Location:</div>
+                    <div class="info-value">{{ application.property_location }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Amount Paid:</div>
+                    <div class="info-value amount">GHC {{ "{:,.2f}".format(payment.amount) }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Payment Method:</div>
+                    <div class="info-value">{{ payment.payment_method|upper }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Transaction ID:</div>
+                    <div class="info-value">{{ payment.transaction_id }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slip-footer">
+            <p>This is a computer-generated receipt. No signature required.</p>
+            <p>For inquiries: info@landadmin.gov.gh | +233 (0) 501500034</p>
+        </div>
+    </div>
+
+    <div class="action-buttons no-print">
+        <button onclick="window.print()" class="btn-download">
+            <i class="fas fa-print me-2"></i>Print Receipt
+        </button>
+        <a href="{{ url_for('my_applications') }}" class="btn btn-secondary btn-download" style="background: #64748b;">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
+    </div>
+</div>
+
+<script>
+    // Auto-trigger print dialog (optional - uncomment to enable)
+    // window.print();
+</script>
+{% endblock %}

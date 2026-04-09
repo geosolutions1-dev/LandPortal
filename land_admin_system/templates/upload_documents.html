@@ -1,0 +1,424 @@
+<!-- templates/upload_documents.html -->
+{% extends "base_private.html" %}
+
+{% block title %}Upload Documents{% endblock %}
+
+{% block extra_css %}
+<style>
+    .document-card {
+        border: 2px dashed #e2e8f0;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #f8fafc;
+    }
+
+    .document-card:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .document-card.has-file {
+        border-color: #10b981;
+        background: #f0fdf4;
+    }
+
+    .file-name {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: 8px;
+        word-break: break-all;
+    }
+
+    .remove-file {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #ef4444;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .document-item {
+        position: relative;
+    }
+
+    .optional-badge {
+        background: #e2e8f0;
+        color: #64748b;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        margin-left: 8px;
+    }
+
+    .other-doc-input {
+        margin-top: 10px;
+        display: none;
+    }
+
+    .other-doc-input.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .requested-doc {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .requested-badge {
+        background: #f59e0b;
+        color: white;
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin-left: 8px;
+    }
+
+    .info-box {
+        background: #e0f2fe;
+        border-left: 4px solid #0284c7;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+</style>
+<!-- Include CKEditor from CDN -->
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">
+                {% if is_reupload %}
+                    Additional Documents Required
+                {% else %}
+                    Upload Supporting Documents
+                {% endif %}
+            </h2>
+            <p class="text-muted">Application: <strong>{{ application.application_number }}</strong></p>
+            <p class="text-muted">Service: <strong>{{ application.service_type|replace('_', ' ')|title }}</strong></p>
+
+            {% if is_reupload %}
+            <div class="info-box">
+                <i class="fas fa-info-circle me-2 text-info"></i>
+                <strong>No Payment Required!</strong><br>
+                The administrator has requested additional documents. Please upload the required documents below.
+                <strong>No additional payment is needed.</strong> Once uploaded, your application will be processed.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-4">
+            <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                <!-- Dynamic Document Upload Section -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">
+                            {% if is_reupload %}
+                                Required Documents
+                            {% else %}
+                                Supporting Documents
+                            {% endif %}
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="addDocumentBtn">
+                            <i class="fas fa-plus me-1"></i>Add Document
+                        </button>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Upload any documents that support your application. All documents are optional unless specified.
+                    </p>
+
+                    <div id="documentsContainer">
+                        <!-- Default document row -->
+                        <div class="document-row mb-3" id="docRow1">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <select name="document_type[]" class="form-select document-select" data-row="1" required>
+                                        <option value="">Select Document Type</option>
+                                        <option value="national_id">National ID / Passport</option>
+                                        <option value="title_deed">Title Deed</option>
+                                        <option value="kra_pin">KRA PIN Certificate</option>
+                                        <option value="land_rates">Land Rates Clearance</option>
+                                        <option value="consent_form">Consent Form</option>
+                                        <option value="power_of_attorney">Power of Attorney</option>
+                                        <option value="succession_certificate">Succession Certificate</option>
+                                        <option value="court_order">Court Order</option>
+                                        <option value="valuation_report">Valuation Report</option>
+                                        <option value="other">Other Document</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="file" name="document_file[]" class="form-control" accept=".pdf,.jpg,.png,.jpeg">
+                                    <small class="text-muted">PDF, JPG, PNG (Max 10MB)</small>
+                                    <div class="other-doc-input" id="otherDocInput1">
+                                        <input type="text" name="other_doc_name[]" class="form-control mt-2" placeholder="Please specify document type (e.g., Agreement Letter, Affidavit, etc.)">
+                                        <small class="text-muted">Enter the type of document you are uploading</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger btn-sm remove-doc" data-row="1">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if requested_documents and requested_documents|length > 0 %}
+                <!-- Requested Documents Section -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-3 text-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>Documents Requested by Admin
+                    </h5>
+                    <div class="row g-3">
+                        {% for req_doc in requested_documents %}
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 requested-doc">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>{{ req_doc.subject|replace('Document Required: ', '') }}</strong>
+                                        <span class="requested-badge">Required</span>
+                                        <p class="small text-muted mt-1 mb-0">{{ req_doc.message[:100] }}</p>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="addRequestedDocument('{{ req_doc.subject|replace('Document Required: ', '') }}')">
+                                        <i class="fas fa-upload me-1"></i>Upload
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Note:</strong> Documents are mandatory if requested by admin. Please upload the required documents to continue.
+                    {% if is_reupload %}
+                    <strong>No additional payment is required.</strong>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                        <i class="fas fa-upload me-2"></i>
+                        {% if is_reupload %}Submit Required Documents{% else %}Upload Selected Documents{% endif %}
+                    </button>
+                    {% if not is_reupload %}
+                    <a href="{{ url_for('make_payment', app_id=application.id) }}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-skip me-2"></i>Skip Documents
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let documentCounter = 1;
+
+    // Function to show/hide other document input
+    function toggleOtherDocInput(selectElement, rowId) {
+        const otherDocDiv = document.getElementById(`otherDocInput${rowId}`);
+        if (selectElement.value === 'other') {
+            otherDocDiv.classList.add('show');
+            const otherInput = otherDocDiv.querySelector('input');
+            if (otherInput) otherInput.required = true;
+        } else {
+            otherDocDiv.classList.remove('show');
+            const otherInput = otherDocDiv.querySelector('input');
+            if (otherInput) {
+                otherInput.required = false;
+                otherInput.value = '';
+            }
+        }
+    }
+
+    // Add requested document row
+    function addRequestedDocument(docType) {
+        documentCounter++;
+        const newRow = document.createElement('div');
+        newRow.className = 'document-row mb-3';
+        newRow.id = `docRow${documentCounter}`;
+        newRow.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <select name="document_type[]" class="form-select document-select" data-row="${documentCounter}" required>
+                        <option value="${docType.toLowerCase().replace(/ /g, '_')}" selected>${docType}</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <input type="file" name="document_file[]" class="form-control" accept=".pdf,.jpg,.png,.jpeg" required>
+                    <small class="text-muted">PDF, JPG, PNG (Max 10MB)</small>
+                    <div class="other-doc-input" id="otherDocInput${documentCounter}">
+                        <input type="text" name="other_doc_name[]" class="form-control mt-2" placeholder="Please specify document type">
+                        <small class="text-muted">Enter the type of document you are uploading</small>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-doc" data-row="${documentCounter}">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        `;
+        document.getElementById('documentsContainer').appendChild(newRow);
+
+        const newSelect = newRow.querySelector('.document-select');
+        newSelect.addEventListener('change', function() {
+            toggleOtherDocInput(this, documentCounter);
+        });
+
+        newRow.querySelector('.remove-doc').addEventListener('click', function() {
+            newRow.remove();
+        });
+
+        newRow.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Add new document row
+    document.getElementById('addDocumentBtn').addEventListener('click', function() {
+        documentCounter++;
+        const newRow = document.createElement('div');
+        newRow.className = 'document-row mb-3';
+        newRow.id = `docRow${documentCounter}`;
+        newRow.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <select name="document_type[]" class="form-select document-select" data-row="${documentCounter}" required>
+                        <option value="">Select Document Type</option>
+                        <option value="national_id">National ID / Passport</option>
+                        <option value="title_deed">Title Deed</option>
+                        <option value="kra_pin">KRA PIN Certificate</option>
+                        <option value="land_rates">Land Rates Clearance</option>
+                        <option value="consent_form">Consent Form</option>
+                        <option value="power_of_attorney">Power of Attorney</option>
+                        <option value="succession_certificate">Succession Certificate</option>
+                        <option value="court_order">Court Order</option>
+                        <option value="valuation_report">Valuation Report</option>
+                        <option value="other">Other Document</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <input type="file" name="document_file[]" class="form-control" accept=".pdf,.jpg,.png,.jpeg">
+                    <small class="text-muted">PDF, JPG, PNG (Max 10MB)</small>
+                    <div class="other-doc-input" id="otherDocInput${documentCounter}">
+                        <input type="text" name="other_doc_name[]" class="form-control mt-2" placeholder="Please specify document type">
+                        <small class="text-muted">Enter the type of document you are uploading</small>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-danger btn-sm remove-doc" data-row="${documentCounter}">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        `;
+        document.getElementById('documentsContainer').appendChild(newRow);
+
+        const newSelect = newRow.querySelector('.document-select');
+        newSelect.addEventListener('change', function() {
+            toggleOtherDocInput(this, documentCounter);
+        });
+
+        newRow.querySelector('.remove-doc').addEventListener('click', function() {
+            newRow.remove();
+        });
+    });
+
+    // Initialize existing selects
+    document.querySelectorAll('.document-select').forEach(select => {
+        const rowId = select.getAttribute('data-row');
+        select.addEventListener('change', function() {
+            toggleOtherDocInput(this, rowId);
+        });
+        if (select.value === 'other') {
+            toggleOtherDocInput(select, rowId);
+        }
+    });
+
+    // Remove document row
+    document.querySelectorAll('.remove-doc').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const rowId = this.getAttribute('data-row');
+            const row = document.getElementById(`docRow${rowId}`);
+            if (row) row.remove();
+        });
+    });
+
+    // Form validation
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        let hasFiles = false;
+
+        const otherSelects = document.querySelectorAll('.document-select');
+        let hasOtherWithoutName = false;
+
+        otherSelects.forEach(select => {
+            if (select.value === 'other') {
+                const rowId = select.getAttribute('data-row');
+                const otherInput = document.getElementById(`otherDocInput${rowId}`).querySelector('input');
+                if (otherInput && !otherInput.value.trim()) {
+                    hasOtherWithoutName = true;
+                    alert('Please specify the document type for the "Other Document" option');
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+
+        if (hasOtherWithoutName) return false;
+
+        fileInputs.forEach(input => {
+            if (input.files.length > 0) hasFiles = true;
+        });
+
+        {% if is_reupload %}
+        if (!hasFiles) {
+            e.preventDefault();
+            alert('Please upload the required documents');
+            return false;
+        }
+        {% else %}
+        if (!hasFiles) {
+            if (confirm('No documents selected. Do you want to proceed without uploading documents?')) {
+                return true;
+            } else {
+                e.preventDefault();
+                return false;
+            }
+        }
+        {% endif %}
+        return true;
+    });
+</script>
+{% endblock %}

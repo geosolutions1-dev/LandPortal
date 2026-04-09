@@ -1,0 +1,243 @@
+<!-- templates/dashboard.html -->
+{% extends "base_private.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media (max-width: 768px) {
+        .stat-card h3 {
+            font-size: 1rem;
+        }
+        .stat-card h6 {
+            font-size: 0.7rem;
+        }
+        .table {
+            font-size: 0.7rem;
+        }
+        .table td, .table th {
+            padding: 0.3rem;
+        }
+        .btn-sm {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.65rem;
+        }
+        .welcome-section h1 {
+            font-size: 1.3rem;
+        }
+    }
+
+    .stat-card {
+        transition: transform 0.2s;
+        border-radius: 12px;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .quick-action-card {
+        transition: all 0.3s;
+        border-radius: 12px;
+        cursor: pointer;
+    }
+
+    .quick-action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    }
+
+    .welcome-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 16px;
+        margin-bottom: 25px;
+    }
+
+    .welcome-section h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section with Gradient -->
+    <div class="welcome-section">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h1 class="display-6 mb-2">Welcome back, {{ session.user_name }}! 👋</h1>
+                <p class="mb-0 opacity-90">Track your land administration applications and appointments</p>
+            </div>
+            <div class="mt-2 mt-sm-0">
+                <a href="{{ url_for('book_appointment') }}" class="btn btn-light">
+                    <i class="fas fa-calendar-plus me-2"></i>Book New Appointment
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 g-md-4 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card p-3 stat-card text-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle p-2 d-inline-block mx-auto mb-2">
+                    <i class="fas fa-folder-open fa-2x text-primary"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ stats.my_applications }}</h3>
+                <h6 class="text-muted mb-0">Total Applications</h6>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card p-3 stat-card text-center">
+                <div class="bg-warning bg-opacity-10 rounded-circle p-2 d-inline-block mx-auto mb-2">
+                    <i class="fas fa-hourglass-half fa-2x text-warning"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ stats.pending_apps }}</h3>
+                <h6 class="text-muted mb-0">Pending Review</h6>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card p-3 stat-card text-center">
+                <div class="bg-success bg-opacity-10 rounded-circle p-2 d-inline-block mx-auto mb-2">
+                    <i class="fas fa-check-circle fa-2x text-success"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ stats.approved_apps|default(0) }}</h3>
+                <h6 class="text-muted mb-0">Approved</h6>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card p-3 stat-card text-center">
+                <div class="bg-info bg-opacity-10 rounded-circle p-2 d-inline-block mx-auto mb-2">
+                    <i class="fas fa-calendar-check fa-2x text-info"></i>
+                </div>
+                <h3 class="fw-bold mb-0">{{ stats.upcoming_appointments }}</h3>
+                <h6 class="text-muted mb-0">Appointments</h6>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Applications Table -->
+    <div class="card mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
+            <h5 class="fw-bold mb-0">📋 Recent Applications</h5>
+            <a href="{{ url_for('my_applications') }}" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>App No.</th>
+                            <th>Service</th>
+                            <th>Location</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in recent_apps %}
+                        <tr>
+                            <td><small><strong>{{ app.application_number }}</strong></small></td>
+                            <td><small>{{ app.service_type|replace('_', ' ')|title }}</small></td>
+                            <td><small>{{ app.property_location }}</small></td>
+                            <td><small>GHC 200.00</small></td>
+                            <td>
+                                {% if app.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif app.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif app.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% elif app.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif app.status == 'payment_made' %}
+                                    <span class="badge bg-primary">Payment Made</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ app.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td><small>{{ app.created_at[:10] }}</small></td>
+                            <td>
+                                <a href="{{ url_for('application_detail', app_id=app.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <i class="fas fa-folder-open fa-3x text-muted mb-3 d-block"></i>
+                                <p class="text-muted mb-0">No applications yet</p>
+                                <a href="{{ url_for('book_appointment') }}" class="btn btn-sm btn-primary mt-2">Book Your First Appointment</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Grid -->
+    <div class="row g-3">
+        <div class="col-12 col-md-4">
+            <div class="card text-center p-4 quick-action-card" onclick="window.location.href='{{ url_for('book_appointment') }}'">
+                <div class="bg-primary bg-opacity-10 rounded-circle p-3 d-inline-block mx-auto mb-3">
+                    <i class="fas fa-calendar-plus fa-2x text-primary"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Book Appointment</h6>
+                <p class="small text-muted mb-0">Schedule a consultation for land services</p>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card text-center p-4 quick-action-card" onclick="window.location.href='{{ url_for('my_applications') }}'">
+                <div class="bg-success bg-opacity-10 rounded-circle p-3 d-inline-block mx-auto mb-3">
+                    <i class="fas fa-upload fa-2x text-success"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Upload Documents</h6>
+                <p class="small text-muted mb-0">Submit required documents for your application</p>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card text-center p-4 quick-action-card" onclick="window.location.href='{{ url_for('my_applications') }}'">
+                <div class="bg-info bg-opacity-10 rounded-circle p-3 d-inline-block mx-auto mb-3">
+                    <i class="fas fa-credit-card fa-2x text-info"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Make Payment</h6>
+                <p class="small text-muted mb-0">Pay for land administration services</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-light border">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <i class="fas fa-headset fa-2x text-primary"></i>
+                    <div>
+                        <strong>Need Help?</strong><br>
+                        <small class="text-muted">Contact our support team at +233 (0) 30 123 4567 or email support@landadmin.gov.gh</small>
+                    </div>
+                    <div class="ms-auto">
+                        <a href="#" class="btn btn-sm btn-outline-primary">Contact Support</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

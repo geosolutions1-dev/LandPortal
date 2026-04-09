@@ -1,0 +1,85 @@
+<!-- templates/profile.html -->
+{% extends "base_private.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">My Profile</h2>
+            <p class="text-muted">View and manage your personal information</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <div class="avatar-lg mx-auto mb-3">
+                        <div class="avatar" style="width: 120px; height: 120px; font-size: 48px; margin: 0 auto;">
+                            {{ user.full_name[0] if user.full_name else 'U' }}
+                        </div>
+                    </div>
+                    <h4>{{ user.full_name }}</h4>
+                    <p class="text-muted">{{ user.user_type|title }}</p>
+                </div>
+                <div class="col-md-8">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 30%;">National ID</th>
+                            <td>{{ user.national_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Full Name</th>
+                            <td>{{ user.full_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email Address</th>
+                            <td>{{ user.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone Number</th>
+                            <td>{{ user.phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>Account Type</th>
+                            <td>{{ user.user_type|title }}</td>
+                        </tr>
+                        <tr>
+                            <th>Member Since</th>
+                            <td>{{ user.created_at[:10] if user.created_at else 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Last Login</th>
+                            <td>{{ user.last_login[:19] if user.last_login else 'First login' }}</td>
+                        </tr>
+                    </table>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mt-3">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-lg {
+        width: 120px;
+        height: 120px;
+    }
+    .avatar {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 48px;
+    }
+</style>
+{% endblock %}
