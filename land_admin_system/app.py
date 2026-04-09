@@ -858,5 +858,39 @@ def health():
         return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
 
 
+@app.route('/api/my-applications')
+@login_required
+def api_my_applications():
+    """API endpoint for paginated applications"""
+    conn = get_db()
+
+    applications = conn.execute('''
+        SELECT 
+            a.*,
+            (SELECT COUNT(*) FROM documents WHERE application_id = a.id) as doc_count,
+            (SELECT status FROM payments WHERE application_id = a.id ORDER BY id DESC LIMIT 1) as payment_status,
+            (SELECT appointment_date FROM appointments WHERE application_id = a.id LIMIT 1) as appointment_date,
+            (SELECT appointment_time FROM appointments WHERE application_id = a.id LIMIT 1) as appointment_time
+        FROM applications a 
+        WHERE a.user_id = ? 
+        ORDER BY a.created_at DESC
+    ''', (session['user_id'],)).fetchall()
+
+    conn.close()
+
+    # Convert to list of dicts
+    applications_list = []
+    for app in applications:
+        app_dict = dict(app)
+        if app_dict.get('doc_count') is None:
+            app_dict['doc_count'] = 0
+        if app_dict.get('payment_status') is None:
+            app_dict['payment_status'] = 'not_initiated'
+        applications_list.append(app_dict)
+
+    return jsonify({'applications': applications_list})
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
